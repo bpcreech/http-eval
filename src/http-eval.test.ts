@@ -58,3 +58,30 @@ test('basic command gives us no response', async () => {
   }
   expect(result).toBe('');
 });
+
+test('error gives us an exception (json)', async () => {
+  console.log('starting server...');
+  const server = startServer();
+  await sleep(1);
+  let result: string = '';
+  try {
+    result = await callServer('foo bar', true);
+  } finally {
+    server.close();
+  }
+  expect(result.startsWith('\"SyntaxError: Unexpected identifier \'bar\'')).toBe(true);
+});
+
+test('error gives us an exception (text)', async () => {
+  console.log('starting server...');
+  const server = startServer();
+  await sleep(1);
+  let result: string = '';
+  try {
+    result = await callServer('foo bar', false);
+  } finally {
+    server.close();
+  }
+  expect(result.startsWith('SyntaxError: Unexpected identifier \'bar\'')).toBe(true);
+});
+

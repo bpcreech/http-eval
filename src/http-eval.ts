@@ -14,16 +14,45 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
   req.on('end', () => {
       const joined = body.join();
       console.log(`running eval on: ${joined}`);
-      const result = eval(joined);
 
-      console.log(req.headers);
-      if (req.headers['accept-encoding'] === 'application/json') {
-        res.writeHead(200, {'Content-Type': 'application/json'})
-        res.end(JSON.stringify(result));
-      } else {
-        // No response for you; it's json or nothing.
-        res.writeHead(200, {'Content-Type': 'text/plain'})
-        res.end();
+      const isJson = req.headers['accept-encoding'] === 'application/json';
+
+      function writeAndEndJson(status: number, body: string) {
+        res.writeHead(status, {'Content-Type': 'application/json'})
+        res.end(body);
+      }
+
+      function writeAndEndPlain(status: number, body?: string) {
+        res.writeHead(status, {'Content-Type': 'text/plain'})
+        res.end(body);
+      }
+
+      try {
+        const result = eval(joined);
+
+        console.log(req.headers);
+        if (isJson) {
+          writeAndEndJson(200, JSON.stringify(result));
+        } else {
+          // No response for you; it's json or nothing.
+          writeAndEndPlain(200);
+        }
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          if (isJson) {
+            writeAndEndJson(200, JSON.stringify(e.stack));
+          } else {
+            // No response for you; it's json or nothing.
+            writeAndEndPlain(200, e.stack);
+          }
+        } else {
+          if (isJson) {
+            writeAndEndJson(200, JSON.stringify("Unknown error"));
+          } else {
+            // No response for you; it's json or nothing.
+            writeAndEndPlain(200, "Unknown error");
+          }
+        }
       }
   });
 };
