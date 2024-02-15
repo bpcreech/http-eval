@@ -2,13 +2,16 @@ import { test, expect } from 'vitest';
 import startServer from './http-eval';
 import { request } from 'http';
 
-async function callServer(input: string) {
+async function callServer(input: string, wantResponse: boolean) {
   const promise: Promise<string> = new Promise((resolve, _reject) => {
     const data: string[] = [];
     const req = request({
       host: 'localhost',
       port: 8080,
       method: 'POST',
+      headers: {
+        'Accept-Encoding': wantResponse ? 'application/json' : 'text/plain',
+      }
     }, (res) => {
       res.setEncoding('utf8');
       res.on('data', (chunk) => {
@@ -24,9 +27,34 @@ async function callServer(input: string) {
   return await promise;
 }
 
-test('server does stuff', async () => {
+function sleep(seconds: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, seconds * 1000);
+  });
+}
+
+test('basic command gives us a response', async () => {
   console.log('starting server...');
-  startServer();
-  const result = await callServer('42');
+  const server = startServer();
+  await sleep(1);
+  let result: string = '';
+  try {
+    result = await callServer('42', true);
+  } finally {
+    server.close();
+  }
   expect(result).toBe('42');
+});
+
+test('basic command gives us no response', async () => {
+  console.log('starting server...');
+  const server = startServer();
+  await sleep(1);
+  let result: string = '';
+  try {
+    result = await callServer('42', false);
+  } finally {
+    server.close();
+  }
+  expect(result).toBe('');
 });
