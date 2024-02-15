@@ -1,0 +1,49 @@
+{
+  "name": "http-eval",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Eval HTTP POST bodies in NodeJS",
+  "author": "Ben Creech",
+  "license": "MIT",
+  "homepage": "https://github.com/bpcreech/http-eval",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bpcreech/http-eval.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bpcreech/http-eval/issues"
+  },
+  "keywords": ["http", "eval", "RCE"],
+  "main": "./dist/http-eval.umd.cjs",
+  "module": "./dist/http-eval.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/http-eval.js",
+      "require": "./dist/http-eval.umd.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.17",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "eslint-config-prettier": "^9.1.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.0",
+    "vite-plugin-checker": "^0.6.4",
+    "vite-plugin-dts": "^3.7.2",
+    "vite-plugin-eslint": "^1.8.1",
+    "vitest": "^1.2.2"
+  }
+}
