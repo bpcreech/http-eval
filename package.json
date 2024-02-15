@@ -13,7 +13,11 @@
   "bugs": {
     "url": "https://github.com/bpcreech/http-eval/issues"
   },
-  "keywords": ["http", "eval", "RCE"],
+  "keywords": [
+    "http",
+    "eval",
+    "RCE"
+  ],
   "main": "./dist/http-eval.umd.cjs",
   "module": "./dist/http-eval.js",
   "types": "./dist/index.d.ts",
