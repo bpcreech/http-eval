@@ -11,20 +11,25 @@ type Params = {
   skipResult?: boolean;
 };
 
-async function withServer(fn: (address: string) => Promise<void>) {
+async function withDir(fn: (dir: string) => Promise<void>) {
   let dir = await mkdtemp(join(tmpdir(), 'httpev-'));
   try {
+    await fn(dir);
+  } finally {
+    await rm(dir, {recursive: true});
+  }
+}
+
+async function withServer(fn: (address: string) => Promise<void>) {
+  await withDir(async (dir: string) => {
     let path = `${dir}/http.sock`;
     const server = startServer(path);
-    await sleep(1);
     try {
       await fn(path);
     } finally {
       server.close();
     }
-  } finally {
-    await rm(dir, {recursive: true});
-  }
+  });
 }
 
 async function callServer(address: string, input: string, params: Params) {
@@ -64,12 +69,6 @@ async function callServer(address: string, input: string, params: Params) {
     req.end();
   });
   return await promise;
-}
-
-function sleep(seconds: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, seconds * 1000);
-  });
 }
 
 test("basic command gives us a response", async () => {
