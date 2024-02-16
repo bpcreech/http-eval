@@ -9,14 +9,15 @@ type Params = {
   wrongUrl?: boolean;
   wrongEncoding?: boolean;
   skipResult?: boolean;
+  status?: number;
 };
 
 async function withDir(fn: (dir: string) => Promise<void>) {
-  let dir = await mkdtemp(join(tmpdir(), 'httpev-'));
+  let dir = await mkdtemp(join(tmpdir(), "httpev-"));
   try {
     await fn(dir);
   } finally {
-    await rm(dir, {recursive: true});
+    await rm(dir, { recursive: true });
   }
 }
 
@@ -61,6 +62,7 @@ async function callServer(address: string, input: string, params: Params) {
           data.push(chunk);
         });
         res.on("end", () => {
+          expect(res.statusCode).toBe(params.status || 200);
           resolve(data.join());
         });
       },
@@ -80,8 +82,21 @@ test("basic command gives us a response", async () => {
 
 test("wrong encoding gives us error", async () => {
   await withServer(async (address) => {
-    const result = await callServer(address, "42", { wrongEncoding: true });
+    const result = await callServer(address, "42", {
+      wrongEncoding: true,
+      status: 400,
+    });
     expect(result).toBe("Only Accept-Encoding=application/json is supported");
+  });
+});
+
+test("wrong url gives us error", async () => {
+  await withServer(async (address) => {
+    const result = await callServer(address, "42", {
+      wrongUrl: true,
+      status: 404,
+    });
+    expect(result).toBe("Only the /run URL is supported");
   });
 });
 
