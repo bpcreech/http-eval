@@ -1,6 +1,9 @@
 import { test, expect } from "vitest";
 import startServer from "./http-eval";
 import { request } from "http";
+import { mkdtemp, rm } from "node:fs/promises";
+import { join } from "path";
+import { tmpdir } from "os";
 
 type Params = {
   wrongUrl?: boolean;
@@ -8,7 +11,23 @@ type Params = {
   skipResult?: boolean;
 };
 
-async function callServer(input: string, params: Params) {
+async function withServer(fn: (address: string) => Promise<void>) {
+  let dir = await mkdtemp(join(tmpdir(), 'httpev-'));
+  try {
+    let path = `${dir}/http.sock`;
+    const server = startServer(path);
+    await sleep(1);
+    try {
+      await fn(path);
+    } finally {
+      server.close();
+    }
+  } finally {
+    await rm(dir, {recursive: true});
+  }
+}
+
+async function callServer(address: string, input: string, params: Params) {
   let url: string;
   if (params.wrongUrl) {
     url = "/bad_url";
@@ -22,7 +41,7 @@ async function callServer(input: string, params: Params) {
     const data: string[] = [];
     const req = request(
       {
-        socketPath: "/var/tmp/http.sock",
+        socketPath: address,
         path: url,
         method: "POST",
         headers: {
@@ -54,65 +73,31 @@ function sleep(seconds: number) {
 }
 
 test("basic command gives us a response", async () => {
-  const server = startServer();
-  await sleep(1);
-  let result: string = "";
-  try {
-    result = await callServer("42", {});
-  } finally {
-    server.close();
-  }
-  expect(result).toBe('{"result":42}');
+  await withServer(async (address) => {
+    const result = await callServer(address, "42", {});
+    expect(result).toBe('{"result":42}');
+  });
 });
 
 test("wrong encoding gives us error", async () => {
-  const server = startServer();
-  await sleep(1);
-  let result: string = "";
-  try {
-    result = await callServer("42", { wrongEncoding: true });
-  } finally {
-    server.close();
-  }
-  expect(result).toBe("Only Accept-Encoding=application/json is supported");
+  await withServer(async (address) => {
+    const result = await callServer(address, "42", { wrongEncoding: true });
+    expect(result).toBe("Only Accept-Encoding=application/json is supported");
+  });
 });
 
 test("no response", async () => {
-  const server = startServer();
-  await sleep(1);
-  let result: string = "";
-  try {
-    result = await callServer("42", { skipResult: true });
-  } finally {
-    server.close();
-  }
-  expect(result).toBe("{}");
+  await withServer(async (address) => {
+    const result = await callServer(address, "42", { skipResult: true });
+    expect(result).toBe("{}");
+  });
 });
 
 test("error gives us an exception (json)", async () => {
-  const server = startServer();
-  await sleep(1);
-  let result: string = "";
-  try {
-    result = await callServer("foo bar", {});
-  } finally {
-    server.close();
-  }
-  expect(
-    result.startsWith('{"error":"SyntaxError: Unexpected identifier \'bar\''),
-  ).toBe(true);
-});
-
-test("error gives us an exception (text)", async () => {
-  const server = startServer();
-  await sleep(1);
-  let result: string = "";
-  try {
-    result = await callServer("foo bar", {});
-  } finally {
-    server.close();
-  }
-  expect(
-    result.startsWith('{"error":"SyntaxError: Unexpected identifier \'bar\''),
-  ).toBe(true);
+  await withServer(async (address) => {
+    const result = await callServer(address, "foo bar", {});
+    expect(
+      result.startsWith('{"error":"SyntaxError: Unexpected identifier \'bar\''),
+    ).toBe(true);
+  });
 });

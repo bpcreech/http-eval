@@ -51,9 +51,9 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
   });
 }
 
-function startServer() {
+function startServer(path: string) {
   const server = createServer(requestListener);
-  server.listen("/var/tmp/http.sock");
+  server.listen(path);
   return server;
 }
 
