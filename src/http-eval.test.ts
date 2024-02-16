@@ -2,16 +2,33 @@ import { test, expect } from "vitest";
 import startServer from "./http-eval";
 import { request } from "http";
 
-async function callServer(input: string, wantResponse: boolean) {
+type Params = {
+  wrongUrl?: boolean;
+  wrongEncoding?: boolean;
+  skipResult?: boolean;
+};
+
+async function callServer(input: string, params: Params) {
+  let url: string;
+  if (params.wrongUrl) {
+    url = "/bad_url";
+  } else if (params.skipResult) {
+    url = "/run?skipResult=true";
+  } else {
+    url = "/run";
+  }
+
   const promise: Promise<string> = new Promise((resolve, _reject) => {
     const data: string[] = [];
     const req = request(
       {
-        host: "localhost",
-        port: 8080,
+        socketPath: "/var/tmp/http.sock",
+        path: url,
         method: "POST",
         headers: {
-          "Accept-Encoding": wantResponse ? "application/json" : "text/plain",
+          "Accept-Encoding": params.wrongEncoding
+            ? "text/plain"
+            : "application/json",
         },
       },
       (res) => {
@@ -41,23 +58,35 @@ test("basic command gives us a response", async () => {
   await sleep(1);
   let result: string = "";
   try {
-    result = await callServer("42", true);
+    result = await callServer("42", {});
   } finally {
     server.close();
   }
-  expect(result).toBe("42");
+  expect(result).toBe('{"result":42}');
 });
 
-test("basic command gives us no response", async () => {
+test("wrong encoding gives us error", async () => {
   const server = startServer();
   await sleep(1);
   let result: string = "";
   try {
-    result = await callServer("42", false);
+    result = await callServer("42", { wrongEncoding: true });
   } finally {
     server.close();
   }
-  expect(result).toBe("");
+  expect(result).toBe("Only Accept-Encoding=application/json is supported");
+});
+
+test("no response", async () => {
+  const server = startServer();
+  await sleep(1);
+  let result: string = "";
+  try {
+    result = await callServer("42", { skipResult: true });
+  } finally {
+    server.close();
+  }
+  expect(result).toBe("{}");
 });
 
 test("error gives us an exception (json)", async () => {
@@ -65,13 +94,13 @@ test("error gives us an exception (json)", async () => {
   await sleep(1);
   let result: string = "";
   try {
-    result = await callServer("foo bar", true);
+    result = await callServer("foo bar", {});
   } finally {
     server.close();
   }
-  expect(result.startsWith("\"SyntaxError: Unexpected identifier 'bar'")).toBe(
-    true,
-  );
+  expect(
+    result.startsWith('{"error":"SyntaxError: Unexpected identifier \'bar\''),
+  ).toBe(true);
 });
 
 test("error gives us an exception (text)", async () => {
@@ -79,11 +108,11 @@ test("error gives us an exception (text)", async () => {
   await sleep(1);
   let result: string = "";
   try {
-    result = await callServer("foo bar", false);
+    result = await callServer("foo bar", {});
   } finally {
     server.close();
   }
-  expect(result.startsWith("SyntaxError: Unexpected identifier 'bar'")).toBe(
-    true,
-  );
+  expect(
+    result.startsWith('{"error":"SyntaxError: Unexpected identifier \'bar\''),
+  ).toBe(true);
 });

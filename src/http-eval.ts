@@ -1,10 +1,24 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
-
-const host = "localhost";
-const port = 8080;
+import { URL } from "url";
 
 function requestListener(req: IncomingMessage, res: ServerResponse) {
   console.log(req.method, req.url, req.headers);
+
+  const parsed = new URL(req.url!, `http://${req.headers.host}`);
+
+  if (parsed.pathname !== "/run") {
+    res.writeHead(404);
+    res.end("Only the /run URL is supported");
+    return;
+  }
+
+  if (req.headers["accept-encoding"] !== "application/json") {
+    res.writeHead(400);
+    res.end("Only Accept-Encoding=application/json is supported");
+    return;
+  }
+
+  const skipResult = parsed.searchParams.get("skipResult") === "true";
 
   const body: string[] = [];
   req.on("data", (chunk) => {
@@ -15,15 +29,8 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
     const joined = body.join();
     console.log(`running eval on: ${joined}`);
 
-    const isJson = req.headers["accept-encoding"] === "application/json";
-
-    function writeAndEndJson(status: number, body: string) {
+    function writeAndEnd(status: number, body: string) {
       res.writeHead(status, { "Content-Type": "application/json" });
-      res.end(body);
-    }
-
-    function writeAndEndPlain(status: number, body?: string) {
-      res.writeHead(status, { "Content-Type": "text/plain" });
       res.end(body);
     }
 
@@ -31,27 +38,14 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
       const result = eval(joined);
 
       console.log(req.headers);
-      if (isJson) {
-        writeAndEndJson(200, JSON.stringify(result));
-      } else {
-        // No response for you; it's json or nothing.
-        writeAndEndPlain(200);
-      }
+
+      const output = skipResult ? {} : { result: result };
+      writeAndEnd(200, JSON.stringify(output));
     } catch (e: unknown) {
       if (e instanceof Error) {
-        if (isJson) {
-          writeAndEndJson(200, JSON.stringify(e.stack));
-        } else {
-          // No response for you; it's json or nothing.
-          writeAndEndPlain(200, e.stack);
-        }
+        writeAndEnd(200, JSON.stringify({ error: e.stack }));
       } else {
-        if (isJson) {
-          writeAndEndJson(200, JSON.stringify("Unknown error"));
-        } else {
-          // No response for you; it's json or nothing.
-          writeAndEndPlain(200, "Unknown error");
-        }
+        writeAndEnd(200, JSON.stringify({ error: "Unknown error" }));
       }
     }
   });
@@ -59,9 +53,7 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
 
 function startServer() {
   const server = createServer(requestListener);
-  server.listen(port, host, () => {
-    console.log(`Server is running on http://${host}:${port}`);
-  });
+  server.listen("/var/tmp/http.sock");
   return server;
 }
 
