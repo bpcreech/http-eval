@@ -1,12 +1,23 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { URL } from "url";
 
-const context = {};
+const context = { __require: require };
 
-function evalInContext(js: string, context: object) {
-  return function () {
-    return eval(js);
-  }.call(context);
+const prefix = `
+"use strict";
+let require = this.__require;
+`;
+
+function evalInContext(js: string) {
+  return Object.getPrototypeOf(function () {})
+    .constructor(prefix + js)
+    .call(context);
+}
+
+async function evalAsyncInContext(js: string) {
+  return await Object.getPrototypeOf(async function () {})
+    .constructor(prefix + js)
+    .call(context);
 }
 
 function requestListener(req: IncomingMessage, res: ServerResponse) {
@@ -32,14 +43,14 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
     return;
   }
 
-  const skipResult = parsed.searchParams.get("skipResult") === "true";
+  const runAsync = parsed.searchParams.get("async") === "true";
 
   const body: string[] = [];
   req.on("data", (chunk) => {
     body.push(chunk);
   });
 
-  req.on("end", () => {
+  req.on("end", async () => {
     const joined = body.join();
     console.log(`running eval on: ${joined}`);
 
@@ -49,12 +60,16 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
     }
 
     try {
-      const result = evalInContext(joined, context);
+      let result: object;
+      if (runAsync) {
+        result = await evalAsyncInContext(joined);
+      } else {
+        result = evalInContext(joined);
+      }
 
       console.log(req.headers);
 
-      const output = skipResult ? {} : { result: result };
-      writeAndEnd(200, JSON.stringify(output));
+      writeAndEnd(200, JSON.stringify({ result: result }));
     } catch (e: unknown) {
       if (e instanceof Error) {
         writeAndEnd(200, JSON.stringify({ error: e.stack }));
