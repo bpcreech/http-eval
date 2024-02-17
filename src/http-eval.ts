@@ -1,4 +1,5 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
+import { promises as fs } from "fs";
 import { URL } from "url";
 
 const context = { __require: require };
@@ -20,8 +21,38 @@ async function evalAsyncInContext(js: string) {
     .call(context);
 }
 
-function requestListener(req: IncomingMessage, res: ServerResponse) {
-  console.log(req.method, req.url, req.headers);
+let checkedPath = false;
+
+async function requestListener(
+  path: string,
+  req: IncomingMessage,
+  res: ServerResponse,
+) {
+  if (!checkedPath) {
+    // This is a basic test for a potential security configuration footgun.
+    // **This is by no means a perfect protection against misconfiguration!**
+
+    // If the user has an extremely permissive umask (like 0o0000), then the
+    // node http module will open a world-writable unix domain socket, and
+    // thus we will accept and execute arbitrary JS from any local user who
+    // has write access to the file system! That would provide a path to local
+    // privilege escalation.
+
+    // So let's do a basic check for a bad umask.
+    // We only do this once (we don't attempt to detect if the user chmods the
+    // file after startup; this is just checking for accidental
+    // misconfigration).
+
+    const stats = await fs.stat(path);
+    const worldWritable = stats.mode & 0o002;
+    if (worldWritable) {
+      res.writeHead(500);
+      res.end(
+        `eval server path ${path} is world-writable! Set umask to at least 0002 before running.`,
+      );
+    }
+    checkedPath = true;
+  }
 
   const parsed = new URL(req.url!, `http://${req.headers.host}`);
 
@@ -52,7 +83,6 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
 
   req.on("end", async () => {
     const joined = body.join();
-    console.log(`running eval on: ${joined}`);
 
     function writeAndEnd(status: number, body: string) {
       res.writeHead(status, { "Content-Type": "application/json" });
@@ -67,8 +97,6 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
         result = evalInContext(joined);
       }
 
-      console.log(req.headers);
-
       writeAndEnd(200, JSON.stringify({ result: result }));
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -81,7 +109,12 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
 }
 
 function startServer(path: string) {
-  const server = createServer(requestListener);
+  const server = createServer();
+  server.on(
+    "request",
+    async (req: IncomingMessage, res: ServerResponse) =>
+      await requestListener(path, req, res),
+  );
   server.listen(path);
   return server;
 }
