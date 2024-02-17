@@ -20,6 +20,12 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
     return;
   }
 
+  if (req.method !== "POST") {
+    res.writeHead(404);
+    res.end("Only the POST method is supported");
+    return;
+  }
+
   if (req.headers["accept-encoding"] !== "application/json") {
     res.writeHead(400);
     res.end("Only Accept-Encoding=application/json is supported");

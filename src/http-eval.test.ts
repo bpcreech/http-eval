@@ -10,6 +10,7 @@ type Params = {
   wrongEncoding?: boolean;
   skipResult?: boolean;
   status?: number;
+  wrongMethod?: boolean;
 };
 
 async function withDir(fn: (dir: string) => Promise<void>) {
@@ -49,7 +50,7 @@ async function callServer(address: string, input: string, params: Params) {
       {
         socketPath: address,
         path: url,
-        method: "POST",
+        method: params.wrongMethod ? "GET" : "POST",
         headers: {
           "Accept-Encoding": params.wrongEncoding
             ? "text/plain"
@@ -97,6 +98,16 @@ test("wrong url gives us error", async () => {
       status: 404,
     });
     expect(result).toBe("Only the /run URL is supported");
+  });
+});
+
+test("wrong method gives us error", async () => {
+  await withServer(async (address) => {
+    const result = await callServer(address, "42", {
+      wrongMethod: true,
+      status: 404,
+    });
+    expect(result).toBe("Only the POST method is supported");
   });
 });
 
