@@ -143,16 +143,8 @@ os.cpus();
 
 test("state works", async () => {
   await withServer(async (address) => {
-    await callServer(
-      address,
-      'this.x = 42;',
-      {},
-    );
-    let result = await callServer(
-      address,
-      'this.x',
-      {},
-    );
+    await callServer(address, "this.x = 42;", {});
+    let result = await callServer(address, "this.x", {});
     expect(JSON.parse(result).result).toBe(42);
   });
 });
