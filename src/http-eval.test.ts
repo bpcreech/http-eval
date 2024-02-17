@@ -115,3 +115,33 @@ test("error gives us an exception (json)", async () => {
     ).toBe(true);
   });
 });
+
+test("import works", async () => {
+  await withServer(async (address) => {
+    const result = await callServer(
+      address,
+      `
+let os = require("os");
+os.cpus();
+`,
+      {},
+    );
+    expect(JSON.parse(result).result.length).toBeGreaterThan(0);
+  });
+});
+
+test("state works", async () => {
+  await withServer(async (address) => {
+    await callServer(
+      address,
+      'this.x = 42;',
+      {},
+    );
+    let result = await callServer(
+      address,
+      'this.x',
+      {},
+    );
+    expect(JSON.parse(result).result).toBe(42);
+  });
+});

@@ -1,6 +1,14 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { URL } from "url";
 
+const context = {};
+
+function evalInContext(js: string, context: object) {
+  return function () {
+    return eval(js);
+  }.call(context);
+}
+
 function requestListener(req: IncomingMessage, res: ServerResponse) {
   console.log(req.method, req.url, req.headers);
 
@@ -35,7 +43,7 @@ function requestListener(req: IncomingMessage, res: ServerResponse) {
     }
 
     try {
-      const result = eval(joined);
+      const result = evalInContext(joined, context);
 
       console.log(req.headers);
 
