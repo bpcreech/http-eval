@@ -1,6 +1,6 @@
 {
   "name": "http-eval",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "description": "Eval HTTP POST bodies in NodeJS",
   "author": "Ben Creech",
