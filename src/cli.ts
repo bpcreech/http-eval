@@ -1,16 +1,20 @@
-import { app } from "./http-eval.ts";
+import { app, options } from "./http-eval.ts";
 import { existsSync } from "node:fs";
 import { unlink } from "node:fs/promises";
-import yargs from 'yargs/yargs';
-import { hideBin } from 'yargs/helpers';
+import yargs from "yargs/yargs";
+import { hideBin } from "yargs/helpers";
 
 const argv = yargs(hideBin(process.argv))
-  .option('udsPath', {
-    alias: 'P',
-    type: 'string',
-    description: 'Unix domain socket path'
+  .option("udsPath", {
+    alias: "P",
+    type: "string",
+    description: "Unix domain socket path",
   })
-  .demand('udsPath')
+  .option("ignoreInsecureSocketPermission", {
+    type: "boolean",
+    description: "Ignore insecure Unix domain socket file ACLs",
+  })
+  .demand("udsPath")
   .check(function (argv) {
     if (existsSync(argv.udsPath)) {
       throw new Error(
@@ -20,6 +24,8 @@ const argv = yargs(hideBin(process.argv))
     return true;
   })
   .parse();
+
+options.ignoreInsecureSocketPermission = argv.ignoreInsecureSocketPermission;
 
 const server = app.listen(argv.udsPath);
 

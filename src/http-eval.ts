@@ -28,15 +28,16 @@ app.use(express.json());
 
 let checkedPath = false;
 
-const ignoreInsecureSocketPermission =
-  JSON.parse(process.env.IGNORE_INSECURE_SOCKET_PERMISSION || "false") != false;
+export const options = {
+  ignoreInsecureSocketPermission: false,
+};
 
 export async function checkPathMiddleware(
   req: Request,
   res: Response,
   next: NextFunction,
 ) {
-  if (checkedPath || ignoreInsecureSocketPermission) {
+  if (checkedPath || options.ignoreInsecureSocketPermission) {
     next();
     return;
   }
@@ -74,7 +75,7 @@ export async function checkPathMiddleware(
     );
   }
 
-  checkedPath = false;
+  checkedPath = true;
 
   next();
 }
