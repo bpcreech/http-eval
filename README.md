@@ -179,8 +179,8 @@ $ curl \
   "result": [
     {
       "model": "DMC(R) DeLorean(R) DMC-12 @ 1.21 GW",
-	  [...]
-    }
+      [...]
+    },
     [...]
   ]
 }
