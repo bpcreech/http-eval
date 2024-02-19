@@ -6,7 +6,7 @@ inside NodeJS.
 ```console
 $ mkdir sandbox && cd sandbox
 $ npm init --yes
-$ npm i --production http-eval
+$ npm i --omit=dev http-eval
 $ npx http-eval --udsPath /tmp/foo.sock
 ```
 
