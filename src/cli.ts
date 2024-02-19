@@ -1,6 +1,5 @@
 import { app, options } from "./http-eval.ts";
 import { existsSync } from "node:fs";
-import { unlink } from "node:fs/promises";
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
 
