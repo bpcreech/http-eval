@@ -4,9 +4,6 @@ Runs a simple http server on a Unix domain socket, which evals POSTed content
 inside NodeJS.
 
 ```console
-$ mkdir sandbox && cd sandbox
-$ npm init --yes
-$ npm i --omit=dev http-eval
 $ npx http-eval --udsPath /tmp/foo.sock
 ```
 
