@@ -42,7 +42,6 @@
     "pkgroll": "^2.0.1",
     "prettier": "^3.2.5",
     "supertest": "^6.3.4",
-    "ts-node": "^10.9.2",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3"
   },
