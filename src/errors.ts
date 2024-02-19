@@ -1,5 +1,7 @@
 // Helpers related to improving error handling in express.
 
+import { Request, Response, RequestHandler, NextFunction } from "express";
+
 /** Extend Error with an HTTP status code. */
 export class HttpEvalError extends Error {
   constructor(

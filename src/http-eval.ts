@@ -6,6 +6,7 @@ import {
   asyncErrorHandler,
 } from "./errors.ts";
 import { stat } from "node:fs/promises";
+import { Server, Socket } from "node:net";
 
 const context = {};
 
@@ -54,7 +55,10 @@ export async function checkPathMiddleware(
   // file after startup; this is just checking for accidental
   // misconfiguration).
 
-  const path = req.socket.server.address();
+  interface HasServer extends Socket {
+    server: Server;
+  }
+  const path = (req.socket as HasServer).server.address();
 
   if (typeof path != "string") {
     throw new Error(
@@ -70,7 +74,7 @@ export async function checkPathMiddleware(
     );
   }
 
-  checkedPath = true;
+  checkedPath = false;
 
   next();
 }
