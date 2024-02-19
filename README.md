@@ -3,14 +3,14 @@
 Runs a simple http server on a Unix domain socket, which evals POSTed content
 inside NodeJS.
 
-```bash
+```console
 $ npm i http-eval
 $ npx http-eval --udsPath /tmp/foo.sock
 ```
 
 and then:
 
-```bash
+```console
 $ curl \
 	--silent \
 	--unix-socket /tmp/foo.sock \
@@ -91,7 +91,7 @@ check at your own risk_.
 
 ### Basic sync call
 
-```bash
+```console
 $ curl \
 	--silent \
 	--unix-socket /tmp/foo.sock \
@@ -100,9 +100,6 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "return 6*7;"}' \
 	| jq .
-```
-
-```bash
 {
   "result": 42
 }
@@ -110,7 +107,7 @@ $ curl \
 
 ### Basic error
 
-```bash
+```console
 $ curl \
 	--silent \
 	--unix-socket /tmp/foo.sock \
@@ -119,9 +116,6 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "bad code;"}' \
 	| jq .
-```
-
-```bash
 {
   "error": "HttpEvalError: Error in eval\n ...",
   "cause": {
@@ -132,7 +126,7 @@ $ curl \
 
 ### Storing and retrieving values on `this`
 
-```bash
+```console
 $ curl \
 	--silent \
 	--unix-socket /tmp/foo.sock \
@@ -141,13 +135,8 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "this.foo = 6*7;"}' \
 	| jq .
-```
-
-```bash
 {}
-```
 
-```bash
 $ curl \
 	--silent \
 	--unix-socket /tmp/foo.sock \
@@ -156,9 +145,6 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "return this.foo;"}' \
 	| jq .
-```
-
-```bash
 {
   "result": 42
 }
@@ -166,7 +152,7 @@ $ curl \
 
 ### Basic async call
 
-```bash
+```console
 $ curl \
 	--silent \
 	--unix-socket /tmp/foo.sock \
@@ -175,15 +161,12 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "await new Promise(resolve => setTimeout(resolve, 2000));"}' \
 	| jq .
-```
-
-```bash
 {}
 ```
 
 ### Async call with a dynamic import
 
-```bash
+```console
 $ curl \
 	--silent \
 	--unix-socket /tmp/foo.sock \
@@ -192,9 +175,6 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "let os = await import(\"os\"); return os.cpus();"}' \
 	| jq .
-```
-
-```bash
 {
   "result": [
     {
