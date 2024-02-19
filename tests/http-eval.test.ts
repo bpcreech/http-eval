@@ -1,4 +1,4 @@
-import { app } from "../src/index.ts";
+import { app } from "../src/http-eval.ts";
 import supertest, { Response, agent } from "supertest";
 import { describe, it } from "node:test";
 import { expect } from "expect";
