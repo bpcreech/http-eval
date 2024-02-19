@@ -6,7 +6,9 @@
   "author": "Ben Creech",
   "license": "MIT",
   "homepage": "https://github.com/bpcreech/http-eval",
-  "bin": "./dist/cli.js",
+  "bin": {
+    "http-eval": "dist/cli.js"
+  },
   "scripts": {
     "build": "pkgroll",
     "start": "node dist/cli.js",
@@ -18,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/bpcreech/http-eval.git"
+    "url": "git+https://github.com/bpcreech/http-eval.git"
   },
   "bugs": {
     "url": "https://github.com/bpcreech/http-eval/issues"
