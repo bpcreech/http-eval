@@ -65,13 +65,15 @@ check at your own risk_.
 
 ## Details
 
-- Requests must contain a JSON body (`Content-Type: application/json`)
-  - ... with an object containing the key `code`
-  - ... which contains the code to execute.
-- Requests must accept JSON in UTF-8 (`Accept-Encoding: application/json`,
-  `Accept-Charset: UTF-8`)
-  - ... and `http-eval` puts the result in an object key `result`.
-  - ... and any exceptions in the object key `error`.
+- Requests must:
+  - Contain a JSON body (`Content-Type: application/json`)
+    - ... with an object containing the key `code` which contains the code to
+      execute.
+  - Accept JSON in UTF-8 (`Accept-Encoding: application/json`,
+    `Accept-Charset: UTF-8`)
+- Responses contain UTF-8 JSON with:
+  - the result in an object key `result`
+    - ... and any exceptions in the object key `error`.
 - Code is evaluated as a function body within an ECMAScript module with a
   consistent `this` context
   - ... and thus must `return` anything it wants to send back to the client
