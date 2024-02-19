@@ -27,8 +27,8 @@ non-JavaScript programs.
 
 ## Security stance
 
-A server which `eval`s arbitrary JavasSript is obviously a bit of a security
-concern! If constructed incorrectly, this would essentially be a vector for
+A server which `eval`s arbitrary JavasSript obviously raises security
+concerns! If constructed incorrectly, this would essentially be a vector for
 Remote Code Execution (RCE) attack.
 
 `http-eval` _attempts to_ guarantee that only the current local Unix user, and
