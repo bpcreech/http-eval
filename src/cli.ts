@@ -1,24 +1,27 @@
 import { app } from "./http-eval.ts";
 import { existsSync } from "node:fs";
 import { unlink } from "node:fs/promises";
+import yargs from 'yargs/yargs';
+import { hideBin } from 'yargs/helpers';
 
-async function getUdsPath() {
-  if (!process.env.HTTP_EVAL_UDS_PATH) {
-    throw new Error("You must define the variable HTTP_EVAL_UDS_PATH");
-  }
+const argv = yargs(hideBin(process.argv))
+  .option('udsPath', {
+    alias: 'P',
+    type: 'string',
+    description: 'Unix domain socket path'
+  })
+  .demand('udsPath')
+  .check(function (argv) {
+    if (existsSync(argv.udsPath)) {
+      throw new Error(
+        `Listen path ${argv.udsPath} already exists. You must remove it first.`,
+      );
+    }
+    return true;
+  })
+  .parse();
 
-  const path = process.env.HTTP_EVAL_UDS_PATH!;
-
-  if (existsSync(path)) {
-    throw new Error(
-      `Listen path ${path} already exists. You must remove it first.`,
-    );
-  }
-
-  return path;
-}
-
-const server = app.listen(await getUdsPath());
+const server = app.listen(argv.udsPath);
 
 process.on("SIGTERM", () => server.close());
 process.on("SIGINT", () => server.close());
