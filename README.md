@@ -72,8 +72,8 @@ check at your own risk_.
   - accept JSON in UTF-8 (`Accept-Encoding: application/json`,
     `Accept-Charset: UTF-8`).
 - Responses contain UTF-8 JSON with:
-  - the result in an object key `result`.
-  - ... and any exceptions in the object key `error`.
+  - the result in the object key `result`, or
+  - any exception in the object key `error`.
 - Code is evaluated as a function body within an ECMAScript module with a
   consistent `this` context
   - ... and thus must `return` anything it wants to send back to the client.
@@ -100,12 +100,15 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "return 6*7;"}' \
 	| jq .
+```
+
+```bash
 {
   "result": 42
 }
 ```
 
-### Basic failure to parse
+### Basic error
 
 ```bash
 $ curl \
@@ -116,6 +119,9 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "bad code;"}' \
 	| jq .
+```
+
+```bash
 {
   "error": "HttpEvalError: Error in eval\n ...",
   "cause": {
@@ -135,7 +141,13 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "this.foo = 6*7;"}' \
 	| jq .
+```
+
+```bash
 {}
+```
+
+```bash
 $ curl \
 	--silent \
 	--unix-socket /tmp/foo.sock \
@@ -144,6 +156,9 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "return this.foo;"}' \
 	| jq .
+```
+
+```bash
 {
   "result": 42
 }
@@ -160,6 +175,9 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "await new Promise(resolve => setTimeout(resolve, 2000));"}' \
 	| jq .
+```
+
+```bash
 {}
 ```
 
@@ -174,6 +192,9 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "let os = await import(\"os\"); return os.cpus();"}' \
 	| jq .
+```
+
+```bash
 {
   "result": [
     {
