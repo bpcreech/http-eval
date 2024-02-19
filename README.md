@@ -19,6 +19,7 @@ $ curl \
 	-H 'Content-Type: application/json' \
 	-d '{ "code": "return 6*7;"}' \
 	| jq .result
+42
 ```
 
 This is intended for use as a subprocess "sidecar" to execute JavaScript from
@@ -57,7 +58,7 @@ configuration footgun. This does not provide any security guarantee against
 misconfiguration.
 
 To intentionally disable the file permission check, set the option
-`ignoreInsecureSocketPermission=true`. This could be plausibly useful in
+`--ignoreInsecureSocketPermission`. This could be plausibly useful in
 situations where you are using other guarantees (e.g., directory permissions, or
 chroot) to protect write access to the UDS, and/or you actually _intend to_
 enable local privilege escalation via `http-eval`. Obviously, _disable this
