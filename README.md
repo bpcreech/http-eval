@@ -65,10 +65,10 @@ check at your own risk_.
 
 ## Details
 
-- Requests contain a JSON body (`Content-Type: application/json`)
+- Requests must contain a JSON body (`Content-Type: application/json`)
   - ... with an object containing the key `code`
   - ... which contains the code to execute.
-- Requests accept JSON in UTF-8 (`Accept-Encoding: application/json`,
+- Requests must accept JSON in UTF-8 (`Accept-Encoding: application/json`,
   `Accept-Charset: UTF-8`)
   - ... and `http-eval` puts the result in an object key `result`.
   - ... and any exceptions in the object key `error`.
@@ -76,10 +76,14 @@ check at your own risk_.
   consistent `this` context
   - ... and thus must `return` anything it wants to send back to the client
     - ... and such returned values must be `JSON.stringify`able
-  - ... and thus can use dynamic `await import(...)` **but not `require`** (and
-    _import_ is generally best used in _async_ mode; see below)
+  - ... and thus can use
+    [dynamic `await import(...)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import)
+    **but not `require`** (and _import_ is generally best used in _async_ mode;
+    see below)
   - ... and thus may store values on `this` between calls.
-- Code an be run in `async` mode using the `async=true` query parameter.
+- Code can be run within an `async` function (and thus use `await`) using the
+  `async=true` query parameter.
+  - ... as noted above, this is required for use of `await import(...)`.
 
 ## Examples
 
