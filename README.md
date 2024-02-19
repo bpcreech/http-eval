@@ -117,9 +117,9 @@ $ curl \
 	-d '{ "code": "bad code;"}' \
 	| jq .
 {
-  "error": "HttpEvalError: Error in eval\n ...",
+  "error": "HttpEvalError: Error in eval\n [...]",
   "cause": {
-    "error": "SyntaxError: Unexpected identifier 'code'\n    at Function (<anonymous>)\n    at ..."
+    "error": "SyntaxError: Unexpected identifier 'code'\n    at Function (<anonymous>)\n    at [...]"
   }
 }
 ```
@@ -179,9 +179,9 @@ $ curl \
   "result": [
     {
       "model": "DMC(R) DeLorean(R) DMC-12 @ 1.21 GW",
-	  ...
+	  [...]
     }
-    ...
+    [...]
   ]
 }
 ```
