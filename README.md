@@ -3,6 +3,19 @@
 Runs a simple http server on a Unix domain socket, which evals POSTed content
 inside NodeJS.
 
+This is intended for use as a subprocess "sidecar" to execute JavaScript from
+non-JavaScript programs.
+
+**Table of Contents**
+
+- [Example](#example)
+- [License](#license)
+- [Security Stance](#security-stance)
+- [Usage instructions](#usage-instructions)
+- [More examples](#more-examples)
+
+## Example
+
 ```console
 $ npx http-eval --udsPath /tmp/foo.sock
 ```
@@ -21,8 +34,10 @@ $ curl \
 42
 ```
 
-This is intended for use as a subprocess "sidecar" to execute JavaScript from
-non-JavaScript programs.
+## License
+
+`http-eval` is distributed under the terms of the
+[MIT](https://spdx.org/licenses/MIT.html) license.
 
 ## Security stance
 
@@ -64,7 +79,7 @@ protect write access to the UDS, and/or you actually _intend to_ enable local
 privilege escalation via `http-eval`. Obviously, _disable this check at your own
 risk_.
 
-## Details
+## Usage instructions
 
 - Requests must:
   - contain a JSON body (`Content-Type: application/json`)
@@ -88,7 +103,7 @@ risk_.
   `async=true` query parameter
   - ... and as noted above, this is required for use of `await import(...)`.
 
-## Examples
+## More examples
 
 ### Basic sync call
 
