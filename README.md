@@ -27,7 +27,7 @@ non-JavaScript programs.
 
 ## Security stance
 
-A server which `eval`s arbitrary JavasSript obviously raises security
+A server which `eval`s arbitrary JavaScript obviously raises security
 concerns! If constructed incorrectly, this would essentially be a vector for
 Remote Code Execution (RCE) attack.
 
