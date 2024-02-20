@@ -46,7 +46,8 @@ If constructed incorrectly, this would essentially be a vector for Remote Code
 Execution (RCE) attack.
 
 `http-eval` _attempts to_ guarantee that only the current local Unix user, and
-folks in its Unix group, can send JavaScript to the server.
+(depending on the `umask`) folks in its Unix group, can send JavaScript to the
+server.
 
 **Note that, as stated in the `LICENSE` file, `http-eval` has no warranty of any
 kind guaranteeing the above security stance. Use at your own risk.** Please
